@@ -16,7 +16,7 @@ int main(void)
   };
   uint8 ct[16];
   uint8 dst[16];
-  uint8 rk[8 * 26 + 16]; /* 8 bytes x 26 rounds(max) + whitening keys */
+  uint8 rk[8 * 18 + 16]; /* 8 bytes x 18 rounds + whitening keys */
   int32 r;
 
   printf("--- Test ---\n");

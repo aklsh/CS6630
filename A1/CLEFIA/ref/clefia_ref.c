@@ -17,6 +17,8 @@
  *
  *****************************************************************************/
 
+#include <stdio.h>
+
 void ByteCpy(unsigned char *dst, const unsigned char *src, int bytelen);
 void ByteXor(unsigned char *dst, const unsigned char *a, const unsigned char *b, int bytelen);
 
@@ -441,12 +443,7 @@ void ClefiaDecrypt(unsigned char *pt, const unsigned char *ct, const unsigned ch
 }
 
 
-
 /* Test */
-
-#ifdef _CLEFIA_TEST
-
-#include <stdio.h>
 
 void BytePut(const unsigned char *data, int bytelen)
 {
@@ -515,10 +512,6 @@ int main(void)
 
   return 0;
 }
-
-#endif /* _CLEFIA_TEST */
-
-
 
 /* end of file */
 

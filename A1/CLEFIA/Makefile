@@ -1,6 +1,5 @@
 # path macros
 BIN_PATH := bin
-OBJ_PATH := obj
 SRC_PATH := src
 DBG_PATH := debug
 REF_PATH := ref
@@ -16,14 +15,16 @@ TARGET_NAME := clefia
 TARGET := $(BIN_PATH)/$(TARGET_NAME)
 TARGET_DEBUG := $(DBG_PATH)/$(TARGET_NAME)
 
+REF_TARGET_NAME := clefia_ref
+REF_TARGET := $(BIN_PATH)/$(REF_TARGET_NAME)
+REF_TARGET_DEBUG := $(DBG_PATH)/$(REF_TARGET_NAME)
+
 # src files & obj files
-SRC := $(foreach x, $(SRC_PATH), $(wildcard $(addprefix $(x)/*,.c*)))
-OBJ := $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
-OBJ_DEBUG := $(addprefix $(DBG_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
+SRC := $(SRC_PATH)/clefia.c $(SRC_PATH)/main.c
+REF := $(REF_PATH)/clefia_ref.c
 
 # clean files list
-DISTCLEAN_LIST := $(OBJ) $(OBJ_DEBUG)
-CLEAN_LIST := $(TARGET) $(TARGET_DEBUG)	$(DISTCLEAN_LIST)
+CLEAN_LIST := $(TARGET) $(TARGET_DEBUG) $(REF_TARGET) $(REF_TARGET_DEBUG)
 
 # default rule
 default: makedir all
@@ -37,14 +38,24 @@ $(TARGET_DEBUG): $(SRC)
 	@echo BUILD $(TARGET_DEBUG)
 	$(CC) $(CCFLAGS) $(DBGFLAGS) -o $@ $(SRC)
 
+$(REF_TARGET): $(REF)
+	@echo BUILD $(REF_TARGET)
+	$(CC) $(CCFLAGS) -o $@ $(REF)
+
+$(REF_TARGET_DEBUG): $(REF)
+	@echo BUILD $(REF_TARGET_DEBUG)
+	$(CC) $(CCFLAGS) $(DBGFLAGS) -o $@ $(REF)
+
 all: $(TARGET)
 
 debug: $(TARGET_DEBUG)
 
+reference: $(REF_TARGET) $(REF_TARGET_DEBUG)
+
 # phony rules
 .PHONY: makedir
 makedir:
-	@mkdir -p $(BIN_PATH) $(OBJ_PATH) $(DBG_PATH) $(REF_PATH) $(INC_PATH)
+	@mkdir -p $(BIN_PATH) $(DBG_PATH) $(REF_PATH) $(INC_PATH)
 
 .PHONY: run
 run: $(TARGET)
@@ -54,8 +65,3 @@ run: $(TARGET)
 clean:
 	@echo CLEAN $(CLEAN_LIST)
 	@rm -f $(CLEAN_LIST)
-
-.PHONY: distclean
-distclean:
-	@echo CLEAN $(DISTCLEAN_LIST)
-	@rm -f $(DISTCLEAN_LIST)

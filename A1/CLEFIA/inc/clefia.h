@@ -14,24 +14,7 @@
 #ifndef __CLEFIA_H__
 #define __CLEFIA_H__
 
-/***************************** Typedefs *****************************/
-
-typedef unsigned char uint8;
-typedef unsigned int uint32;
-typedef char int8;
-typedef int int32;
-typedef enum {
-  T_F0_0,
-  T_F0_1,
-  T_F0_2,
-  T_F0_3,
-  T_F1_0,
-  T_F1_1,
-  T_F1_2,
-  T_F1_3,
-} tableType;
-
-/*********************************************************************/
+#include "utils.h"
 
 /***************************** Constants *****************************/
 
