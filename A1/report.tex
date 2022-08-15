@@ -28,7 +28,7 @@
 
 \MakeOuterQuote{"}
 
-\def \courseNumber {CS6600}
+\def \courseNumber {CS6630}
 \def \courseName {Secure Processor Microarchitecture}
 \def \assignmentName {Assignment 1}
 \def \myName {Arjun Menon V, Akilesh Kannan}
@@ -109,6 +109,38 @@
 \medskip
 
 \section{CLEFIA}
+
+\begin{warning}
+The CLEFIA-128 cipher implemented here is adapted from the reference implementation provided by SONY Corporation from \href{https://www.sony.net/Products/cryptography/clefia/}{here}.
+\end{warning}
+
+\subsection{Approach}
+The \texttt{F0} and \texttt{F1} functions in CLEFIA have been implemented using lookup tables (T-Tables). These functions formed the core of CLEFIA, with a \textit{substitution} layer and a \textit{diffusion} layer.
+
+However, due to the diffusion layer, which involves modular arithmetic in \texttt{GF(2$^\text{8}$)}, timing attacks can be done, due to the if-else structure of the multiplication operation in the reference implementation.
+
+To overcome this, we can use lookup tables to perform the F-functions (as well as the following \texttt{XOR} operation), which will occur in constant time\footnotemark.
+
+\footnotetext{Assuming, the table is fully located in cache.}
+
+We have used 8 lookup tables (8KB each) totally to implement the \texttt{F0} and \texttt{F1} functions. This can be reduced to 4 tables, with the other 4 being just a circularly shifted version of these, but we chose not to for the sake of easier understanding.
+
+\begin{colorboxed}{\texttt{F0}, \texttt{F1} functions}{}{breakable}
+    \inputminted[baselinestretch=0.85,breaklines,firstline=367,lastline=401,fontsize=\footnotesize]{c}{CLEFIA/src/clefia.c}
+\end{colorboxed}
+
+In the above code snippet, the \texttt{TF**} are the lookup tables - the first digit denotes which of \texttt{F0} or \texttt{F1} it is used in and the second denotes which byte of the output it is used for. We perform an endian-ness switch\footnotemark\ in order to make it compatible with the reference implementations' \texttt{XOR} function.
+
+\footnotetext{This is not required in a big-endian machine. Code was tested only on little-endian machines.}
+
+\subsection{Results}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{Q1_output.png}
+    \label{fig:clefia_cipher}
+    \caption{CLEFIA-128 Cipher Output}
+\end{figure}
+
 \section{Hashed Password Cracking}
 \subsection{Approach}
 The following observations were made about the hash implementation:
@@ -117,32 +149,41 @@ The following observations were made about the hash implementation:
     \item Each character in the hashed string was dependent only on a single character from the input string. This allows one to easily reverse-engineer the hash by sequentially brute-forcing each of the characters in the correct order as they were used by the hashing mechanism. This reduced the number of tries exponentially - from \texttt{PRIME}$^\text{N}$ to \texttt{PRIME}$*\text{N}$, where N is the number of characters in the search space.
 \end{itemize}
 
-Based on these observations, we wrote a python script that starts with a know password (the blank password), and sequentially try brute-forcing the characters in the correct order as used by the hash. The correct character can be identified by a spike in the time taken for the hash computation (will increase by 1 sec). The next iteration of the cracker will use this character and try guessing the next character.
+Based on these observations, we wrote a python script that starts with a known password (the blank password), and sequentially try brute-forcing the characters in the correct order as used by the hash. The correct character can be identified by a spike in the time taken for the hash computation (will increase by 1 sec). The next iteration of the cracker will use this character and try guessing the next character.
 
 In order to automate this process, we used TCP sockets to communicate with the server.
 
 \begin{colorboxed}{Password cracker script}{}{breakable}
     \inputminted[baselinestretch=0.85,breaklines,fontsize=\footnotesize]{python}{HashCollision/cracker.py}
 \end{colorboxed}
+
 \subsection{Results}
 
 \begin{table}[H]
-    \centering
-    \begin{tabular}{|c|c|}
-        \hline
-         \textbf{Parameter}    &        \textbf{Value}                   \\ \hline
-                {Password}     & \texttt{spm\{fastandfurious\}}          \\ \hline
-                {Guesses}      &            153                          \\ \hline
-    \end{tabular}
-    \caption{Summary Table}
+\centering
+\begin{tabular}{@{}cc@{}}
+\toprule
+\textbf{Parameter}           & \textbf{Value}                 \\ \midrule
+\multicolumn{1}{c}{Password} & \texttt{spm\{fastandfurious\}}  \\ \midrule
+\multicolumn{1}{c}{Guesses}  & 153                             \\ \midrule
+\multicolumn{1}{c}{\multirow{6}{*}{Colliding passwords}} & \texttt{spm\{fastandfurious\}\_hacked}              \\ \cmidrule(l){2-2}
+\multicolumn{1}{c}{}                                     & \texttt{spm\{fastandfurious\}\_h4ckeD}  \\ \cmidrule(l){2-2}
+\multicolumn{1}{c}{}                                     & \texttt{spm\{fastandfurious\}c011iDe}   \\ \cmidrule(l){2-2}
+\multicolumn{1}{c}{}                                     & \texttt{spm\{fastandfurious\}\_c0lliDe} \\ \cmidrule(l){2-2}
+\multicolumn{1}{c}{}                                     & \texttt{spm\{fastandfurious\}\_fA5t9} \\ \bottomrule
+\end{tabular}
+\caption{Summary}
+\label{tab:summary}
 \end{table}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.3]{Q2_output.png}
+    \includegraphics[scale=0.4]{Q2_output.png}
     \label{fig:output_password}
     \caption{Password cracked and access granted}
 \end{figure}
+
+
 
 %Beginning References. Don't add any text beyond this.
 %------------------------------------------
