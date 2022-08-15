@@ -1,0 +1,154 @@
+\documentclass[12pt,a4paper,english]{paper}
+\usepackage{fontspec}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[left=0.65in,right=0.65in,top=2cm,bottom=1in]{geometry}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{bm}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{changepage}
+\usepackage[square,sort,comma,numbers]{natbib}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{eucal}
+\usepackage[]{minted}
+\usepackage{latexsym}
+\usepackage{indentfirst}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage[english]{babel}
+\usepackage[autostyle, english = american]{csquotes}
+\usepackage[default]{lato}
+\usepackage{FiraMono}
+\usepackage{lipsum}
+
+\MakeOuterQuote{"}
+
+\def \courseNumber {CS6600}
+\def \courseName {Secure Processor Microarchitecture}
+\def \assignmentName {Assignment 1}
+\def \myName {Arjun Menon V, Akilesh Kannan}
+\def \rollNumber {EE18B104, EE18B122}
+
+\setlength{\headheight}{14pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\assignmentName}
+\lhead{\courseNumber: \courseName}
+\cfoot{\thepage}
+
+% \linespread{1.2}
+
+\definecolor{blue(ryb)}{rgb}{0.01, 0.28, 1.0}
+\definecolor{green(ryb)}{rgb}{0.28, 1.0, 0.01}
+\definecolor{red(ryb)}{rgb}{1.0, 0.01, 0.28}
+\definecolor{black(ryb)}{rgb}{0, 0, 0}
+\definecolor{gray(ryb)}{rgb}{0.75, 0.75, 0.75}
+\definecolor{orange}{RGB}{255,155,0}
+\definecolor{formalblue}{rgb}{0.95,0.95,1}
+\definecolor{formalred}{rgb}{1,0.95,0.95}
+
+\newenvironment{colorboxed}[4][gray]{
+\begin{tcolorbox}[colback=#1!3!white,colframe=#1(ryb)!50!black,title=\textbf{#2 #3},#4]
+}{
+\end{tcolorbox}
+}
+
+\newenvironment{warning}{%
+  \def\FrameCommand{%
+    \hspace{1pt}%
+    {\color{red}\vrule width 2pt}%
+    {\color{formalred}\vrule width 4pt}%
+    \colorbox{formalred}%
+  }%
+  \MakeFramed{\advance\hsize-\width\FrameRestore}%
+  \noindent\hspace{-4.55pt}% disable indenting first paragraph
+  \begin{adjustwidth}{7pt}{}%
+  \vspace{2pt}\vspace{2pt}%
+}
+{%
+  \vspace{2pt}\end{adjustwidth}\endMakeFramed%
+}
+
+\newenvironment{results}{%
+  \def\FrameCommand{%
+    \hspace{1pt}%
+    {\color{blue}\vrule width 2pt}%
+    {\color{formalblue}\vrule width 4pt}%
+    \colorbox{formalblue}%
+  }%
+  \MakeFramed{\advance\hsize-\width\FrameRestore}%
+  \noindent\hspace{-4.55pt}% disable indenting first paragraph
+  \begin{adjustwidth}{7pt}{}%
+  \vspace{2pt}\vspace{2pt}%
+}
+{%
+  \vspace{2pt}\end{adjustwidth}\endMakeFramed%
+}
+
+\begin{document}
+\thispagestyle{empty}
+\vspace{-4.5cm}
+
+\hspace*{-\parindent}
+\begin{minipage}{0.65\textwidth}
+\fontsize{22pt}{10pt}\selectfont\textbf{\assignmentName}\\[1mm]
+\Large
+\textit{\courseNumber: \courseName}\\[5mm]
+\Large \myName \\[1mm]
+\normalsize \rollNumber \\
+\end{minipage}\hfill% push everything to the right
+\raisebox{-13mm}{\includegraphics[scale=.28]{logo.pdf}}
+
+\hrule \hrule
+\medskip
+
+\section{CLEFIA}
+\section{Hashed Password Cracking}
+\subsection{Approach}
+The following observations were made about the hash implementation:
+\begin{itemize}
+    \item The hash only used the first \texttt{PRIME} characters of the input password. The rest of the characters didn't matter. This allows one to perform collision attacks on the hash, if the secret key was more than \texttt{PRIME} characters long - all the attacker has to do is to find the first \texttt{PRIME} characters in the secret key.
+    \item Each character in the hashed string was dependent only on a single character from the input string. This allows one to easily reverse-engineer the hash by sequentially brute-forcing each of the characters in the correct order as they were used by the hashing mechanism. This reduced the number of tries exponentially - from \texttt{PRIME}$^\text{N}$ to \texttt{PRIME}$*\text{N}$, where N is the number of characters in the search space.
+\end{itemize}
+
+Based on these observations, we wrote a python script that starts with a know password (the blank password), and sequentially try brute-forcing the characters in the correct order as used by the hash. The correct character can be identified by a spike in the time taken for the hash computation (will increase by 1 sec). The next iteration of the cracker will use this character and try guessing the next character.
+
+In order to automate this process, we used TCP sockets to communicate with the server.
+
+\begin{colorboxed}{Password cracker script}{}{breakable}
+    \inputminted[baselinestretch=0.85,breaklines,fontsize=\footnotesize]{python}{HashCollision/cracker.py}
+\end{colorboxed}
+\subsection{Results}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+         \textbf{Parameter}    &        \textbf{Value}                   \\ \hline
+                {Password}     & \texttt{spm\{fastandfurious\}}          \\ \hline
+                {Guesses}      &            153                          \\ \hline
+    \end{tabular}
+    \caption{Summary Table}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{Q2_output.png}
+    \label{fig:output_password}
+    \caption{Password cracked and access granted}
+\end{figure}
+
+%Beginning References. Don't add any text beyond this.
+%------------------------------------------
+
+%\newpage %sending References to the last page
+
+\bibliography{paper}
+\bibliographystyle{acm}
+\end{document}
