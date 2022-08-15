@@ -8,9 +8,8 @@ INC_PATH := inc
 
 # tool macros
 CC := gcc
-CCFLAGS := -I$(INC_PATH) $(DEFINES)
+CCFLAGS := -I$(INC_PATH)
 DBGFLAGS := -g
-CCOBJFLAGS := $(CCFLAGS) -c
 
 # compile macros
 TARGET_NAME := clefia
@@ -30,17 +29,13 @@ CLEAN_LIST := $(TARGET) $(TARGET_DEBUG)	$(DISTCLEAN_LIST)
 default: makedir all
 
 # non-phony targets
-$(TARGET): $(OBJ)
-	$(CC) $(CCFLAGS) -o $@ $(OBJ)
+$(TARGET): $(SRC)
+	@echo BUILD $(TARGET)
+	$(CC) $(CCFLAGS) -o $@ $(SRC)
 
-$(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
-	$(CC) $(CCOBJFLAGS) -o $@ $<
-
-$(DBG_PATH)/%.o: $(SRC_PATH)/%.c*
-	$(CC) $(CCOBJFLAGS) $(DBGFLAGS) -o $@ $<
-
-$(TARGET_DEBUG): $(OBJ_DEBUG)
-	$(CC) $(CCFLAGS) $(DBGFLAGS) $(OBJ_DEBUG) -o $@
+$(TARGET_DEBUG): $(SRC)
+	@echo BUILD $(TARGET_DEBUG)
+	$(CC) $(CCFLAGS) $(DBGFLAGS) -o $@ $(SRC)
 
 all: $(TARGET)
 
