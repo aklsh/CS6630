@@ -305,9 +305,10 @@ void keySet(uint8 *rk, const uint8 *skey)
   byteCpy(rk, skey + 8, 8); /* final whitening key (WK2, WK3) */
 }
 
-void encrypt(uint8 *ct, const uint8 *pt, const uint8 *rk, const int32 r)
+void clefia_encryption(uint8 *rk, uint8 *pt, uint8 *ct)
 {
   uint8 rin[16], rout[16];
+  int32 r = 18;
 
   byteCpy(rin,  pt,  16);
 
@@ -322,9 +323,10 @@ void encrypt(uint8 *ct, const uint8 *pt, const uint8 *rk, const int32 r)
   byteXor(ct + 12, ct + 12, rk + r * 8 + 4, 4);
 }
 
-void decrypt(uint8 *pt, const uint8 *ct, const uint8 *rk, const int32 r)
+void clefia_decryption(uint8 *rk, uint8 *ct, uint8 *pt)
 {
   uint8 rin[16], rout[16];
+  int32 r = 18;
 
   byteCpy(rin, ct, 16);
 
