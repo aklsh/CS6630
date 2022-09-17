@@ -20,18 +20,18 @@ def sbox_inv(byte):
 def reverseKey(key10):
     subKeys = np.zeros(176, dtype= np.uint8)
     for i in range(160, 176):
-        subKeys[i] = key10[i - 160].astype(np.uint8)
+        subKeys[i] = key10[i - 160]
     for i in range(156, -1, -4):
         if i % 16 == 0:
-            subKeys[i] = subKeys[i + 16].astype(np.uint8) ^ sbox(subKeys[i+13]).astype(np.uint8) ^ rcon[i >> 4].astype(np.uint8)
-            subKeys[i+1] = subKeys[i+17].astype(np.uint8) ^ sbox(subKeys[i+14]).astype(np.uint8)
-            subKeys[i+2] = subKeys[i+18].astype(np.uint8) ^ sbox(subKeys[i+15]).astype(np.uint8)
-            subKeys[i+3] = subKeys[i+19].astype(np.uint8) ^ sbox(subKeys[i+12]).astype(np.uint8)
+            subKeys[i] = subKeys[i + 16] ^ sbox(subKeys[i+13]) ^ rcon[i >> 4]
+            subKeys[i+1] = subKeys[i+17] ^ sbox(subKeys[i+14])
+            subKeys[i+2] = subKeys[i+18] ^ sbox(subKeys[i+15])
+            subKeys[i+3] = subKeys[i+19] ^ sbox(subKeys[i+12])
         else:
-            subKeys[i] = subKeys[i + 16].astype(np.uint8) ^ sbox(subKeys[i+12]).astype(np.uint8)
-            subKeys[i+1] = subKeys[i+17].astype(np.uint8) ^ sbox(subKeys[i+13]).astype(np.uint8)
-            subKeys[i+2] = subKeys[i+18].astype(np.uint8) ^ sbox(subKeys[i+14]).astype(np.uint8)
-            subKeys[i+3] = subKeys[i+19].astype(np.uint8) ^ sbox(subKeys[i+15]).astype(np.uint8)
+            subKeys[i] = subKeys[i + 16] ^ sbox(subKeys[i+12])
+            subKeys[i+1] = subKeys[i+17] ^ sbox(subKeys[i+13])
+            subKeys[i+2] = subKeys[i+18] ^ sbox(subKeys[i+14])
+            subKeys[i+3] = subKeys[i+19] ^ sbox(subKeys[i+15])
     return subKeys
     
 def get_fault_column(position):
@@ -97,6 +97,7 @@ def solve(correct, faulty, byte_positions, factors):
     return possibilities
 
 if __name__ == '__main__':
+    '''
     keys_p0 = []
     keys_p1 = []
     keys_p2 = []
@@ -137,5 +138,7 @@ if __name__ == '__main__':
         key10[indexGroups[3][i]] = final_set_3[0][i]
 
     np.save("key10", key10)
+    '''
+    key10 = np.load("key10.npy", "r").astype(np.uint8)
     allKeys = reverseKey(key10)
     np.save("allKeys", allKeys)
