@@ -33,7 +33,7 @@ def reverseKey(key10):
             subKeys[i+2] = subKeys[i+18] ^ sbox(subKeys[i+14])
             subKeys[i+3] = subKeys[i+19] ^ sbox(subKeys[i+15])
     return subKeys
-    
+
 def get_fault_column(position):
     if position == 0 or position == 5 or position == 10 or position == 15:
         return 0
@@ -97,7 +97,6 @@ def solve(correct, faulty, byte_positions, factors):
     return possibilities
 
 if __name__ == '__main__':
-    
     keys_p0 = []
     keys_p1 = []
     keys_p2 = []
@@ -130,7 +129,7 @@ if __name__ == '__main__':
     print(len(final_set_3), final_set_3)
 
     key10 = [0] * 16
-    indexGroups = [[0, 7, 10, 13], [1, 4, 11, 14], [2, 5, 8, 15], [3, 6, 9, 12]]
+    indexGroups = [[0, 13, 10, 7], [4, 1, 14, 11], [8, 5, 2, 15], [12, 9, 6, 3]]
     for i in range(0, 4):
         key10[indexGroups[0][i]] = final_set_0[0][i]
         key10[indexGroups[1][i]] = final_set_1[0][i]
