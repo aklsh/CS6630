@@ -97,7 +97,7 @@ def solve(correct, faulty, byte_positions, factors):
     return possibilities
 
 if __name__ == '__main__':
-    '''
+    
     keys_p0 = []
     keys_p1 = []
     keys_p2 = []
@@ -138,7 +138,10 @@ if __name__ == '__main__':
         key10[indexGroups[3][i]] = final_set_3[0][i]
 
     np.save("key10", key10)
-    '''
-    key10 = np.load("key10.npy", "r").astype(np.uint8)
+    #key10 = np.load("key10.npy", "r").astype(np.uint8)
     allKeys = reverseKey(key10)
+    allKey_dict = {}
+    print("Secret Key: ", allKeys[0:16])
+    for i in range(1, 11, 1):
+        print("Round {}:".format(i), allKeys[16*i : 16*(i+1)])
     np.save("allKeys", allKeys)
