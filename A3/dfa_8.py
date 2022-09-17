@@ -17,6 +17,23 @@ def sbox(byte):
 def sbox_inv(byte):
     return s_[byte]
 
+def reverseKey(key10):
+    subKeys = np.zeros(176, dtype= np.uint8)
+    for i in range(160, 176):
+        subKeys[i] = key10[i - 160].astype(np.uint8)
+    for i in range(156, -1, -4):
+        if i % 16 == 0:
+            subKeys[i] = subKeys[i + 16].astype(np.uint8) ^ sbox(subKeys[i+13]).astype(np.uint8) ^ rcon[i >> 4].astype(np.uint8)
+            subKeys[i+1] = subKeys[i+17].astype(np.uint8) ^ sbox(subKeys[i+14]).astype(np.uint8)
+            subKeys[i+2] = subKeys[i+18].astype(np.uint8) ^ sbox(subKeys[i+15]).astype(np.uint8)
+            subKeys[i+3] = subKeys[i+19].astype(np.uint8) ^ sbox(subKeys[i+12]).astype(np.uint8)
+        else:
+            subKeys[i] = subKeys[i + 16].astype(np.uint8) ^ sbox(subKeys[i+12]).astype(np.uint8)
+            subKeys[i+1] = subKeys[i+17].astype(np.uint8) ^ sbox(subKeys[i+13]).astype(np.uint8)
+            subKeys[i+2] = subKeys[i+18].astype(np.uint8) ^ sbox(subKeys[i+14]).astype(np.uint8)
+            subKeys[i+3] = subKeys[i+19].astype(np.uint8) ^ sbox(subKeys[i+15]).astype(np.uint8)
+    return subKeys
+    
 def get_fault_column(position):
     if position == 0 or position == 5 or position == 10 or position == 15:
         return 0
@@ -106,10 +123,23 @@ if __name__ == '__main__':
     final_set_1 = list(set(keys_p1[0]) & set(keys_p1[1]) & set(keys_p1[2]) & set(keys_p1[3]))
     final_set_2 = list(set(keys_p2[0]) & set(keys_p2[1]) & set(keys_p2[2]) & set(keys_p2[3]))
     final_set_3 = list(set(keys_p3[0]) & set(keys_p3[1]) & set(keys_p3[2]) & set(keys_p3[3]))
-    print(len(final_set_0))
-    print(len(final_set_1))
-    print(len(final_set_2))
-    print(len(final_set_3))
+    print(len(final_set_0), final_set_0)
+    print(len(final_set_1), final_set_1)
+    print(len(final_set_2), final_set_2)
+    print(len(final_set_3), final_set_3)
+
+    key10 = [0] * 16
+    indexGroups = [[0, 7, 10, 13], [1, 4, 11, 14], [2, 5, 8, 15], [3, 6, 9, 12]]
+    for i in range(0, 4):
+        key10[indexGroups[0][i]] = final_set_0[0][i]
+        key10[indexGroups[1][i]] = final_set_1[0][i]
+        key10[indexGroups[2][i]] = final_set_2[0][i]
+        key10[indexGroups[3][i]] = final_set_3[0][i]
+
+    np.save("key10", key10)
+    allKeys = reverseKey(key10)
+    np.save("allKeys", allKeys)
+
     # keys_1_4_11_14 = solve(ct[0], ct_[0], [1, 4, 11, 14], [2, 3, 1, 1])
     # keys_2_5_8_15 = solve(ct[0], ct_[0], [2, 5, 8, 15], [2, 3, 1, 1])
     # keys_3_6_9_12 = solve(ct[0], ct_[0], [3, 6, 9, 12], [2, 3, 1, 1])
