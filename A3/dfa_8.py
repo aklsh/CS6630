@@ -139,36 +139,3 @@ if __name__ == '__main__':
     np.save("key10", key10)
     allKeys = reverseKey(key10)
     np.save("allKeys", allKeys)
-
-    # keys_1_4_11_14 = solve(ct[0], ct_[0], [1, 4, 11, 14], [2, 3, 1, 1])
-    # keys_2_5_8_15 = solve(ct[0], ct_[0], [2, 5, 8, 15], [2, 3, 1, 1])
-    # keys_3_6_9_12 = solve(ct[0], ct_[0], [3, 6, 9, 12], [2, 3, 1, 1])
-
-    # keys = []
-    # for p0 in keys_0_7_10_13:
-    #     for p1 in keys_1_4_11_14:
-    #         for p2 in keys_2_5_8_15:
-    #             for p3 in keys_3_6_9_12:
-    #                 key = (p0[0], p1[0], p2[0], p3[0],
-    #                        p1[1], p2[1], p3[1], p0[1],
-    #                        p2[2], p3[2], p0[2], p1[2],
-    #                        p3[3], p0[3], p1[3], p2[3]
-    #                       )
-    #                 keys.append(key)
-
-    # keys_0_7_10_13 = solve(ct[1], ct_[1], [0, 7, 10, 13], [2, 3, 1, 1])
-    # keys_1_4_11_14 = solve(ct[1], ct_[1], [1, 4, 11, 14], [2, 3, 1, 1])
-    # keys_2_5_8_15 = solve(ct[1], ct_[1], [2, 5, 8, 15], [2, 3, 1, 1])
-    # keys_3_6_9_12 = solve(ct[1], ct_[1], [3, 6, 9, 12], [2, 3, 1, 1])
-
-    # keys = []
-    # for p0 in keys_0_7_10_13:
-    #     for p1 in keys_1_4_11_14:
-    #         for p2 in keys_2_5_8_15:
-    #             for p3 in keys_3_6_9_12:
-    #                 key = (p0[0], p1[0], p2[0], p3[0],
-    #                        p1[1], p2[1], p3[1], p0[1],
-    #                        p2[2], p3[2], p0[2], p1[2],
-    #                        p3[3], p0[3], p1[3], p2[3]
-    #                       )
-    #                 keys.append(key)
