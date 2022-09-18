@@ -1,12 +1,12 @@
 import numpy as np
 
-ct = np.load("ciphertexts.npy")
-ct_ = np.load("faultytexts.npy")
+ct = np.load("../data/ciphertexts.npy")
+ct_ = np.load("../data/faultytexts.npy")
 
-s = np.load("sbox.npy")
-s_ = np.load("sbox_inv.npy")
+s = np.load("../data/sbox.npy")
+s_ = np.load("../data/sbox_inv.npy")
 
-mult = np.load("multiplies.npy")
+mult = np.load("../data/multiplies.npy")
 rcon = [0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36]
 
 def sbox(byte):
@@ -45,6 +45,7 @@ def get_fault_column(position):
     else:
         return None
 
+# Get the factors for delta in each of the 4 sets of 4 equations
 def get_factors(column):
     if column == 0:
         return [[2, 1, 1, 3],
@@ -72,9 +73,11 @@ def get_factors(column):
 # Solve 1 set of equations (4 key bytes)
 def solve(correct, faulty, byte_positions, factors):
     possibilities = []
+    # Assume certain delta
     for delta in range(256):
         b_sols = []
 
+        # Solve for each of the 4 bytes
         for i in range(4):
             bi_sols = []
             lhs = mult[factors[i],delta]
@@ -84,8 +87,10 @@ def solve(correct, faulty, byte_positions, factors):
                     bi_sols.append(kb)
             b_sols.append(bi_sols)
 
+        # If at least one equation not satisfied for given delta, discard
         if (len(b_sols[0]) == 0) or (len(b_sols[1]) == 0) or (len(b_sols[2]) == 0) or (len(b_sols[3]) == 0):
             continue
+        # Else, add solutions to possibilities
         else:
             for b0 in b_sols[0]:
                 for b1 in b_sols[1]:
@@ -96,16 +101,19 @@ def solve(correct, faulty, byte_positions, factors):
     return possibilities
 
 if __name__ == '__main__':
-    
+    # 4 subparts of all inputs and fault positions
     keys_p0 = []
     keys_p1 = []
     keys_p2 = []
     keys_p3 = []
-    for pair_num in range(4):
+    # solve for 2 pairs of CT-CT'
+    for pair_num in range(2):
+        # different 4-byte subkeys of K10
         keys_0_7_10_13 = []
         keys_1_4_11_14 = []
         keys_2_5_8_15 = []
         keys_3_6_9_12 = []
+        # assume fault is at each position (since we don't know where)
         for position in range(16):
             col_num = get_fault_column(position)
             assert(col_num!=None)
@@ -119,30 +127,27 @@ if __name__ == '__main__':
         keys_p1.append(keys_1_4_11_14)
         keys_p2.append(keys_2_5_8_15)
         keys_p3.append(keys_3_6_9_12)
-    final_set_0 = list(set(keys_p0[0]) & set(keys_p0[1]) & set(keys_p0[2]) & set(keys_p0[3]))
-    final_set_1 = list(set(keys_p1[0]) & set(keys_p1[1]) & set(keys_p1[2]) & set(keys_p1[3]))
-    final_set_2 = list(set(keys_p2[0]) & set(keys_p2[1]) & set(keys_p2[2]) & set(keys_p2[3]))
-    final_set_3 = list(set(keys_p3[0]) & set(keys_p3[1]) & set(keys_p3[2]) & set(keys_p3[3]))
-    print(len(final_set_0), final_set_0)
-    print(len(final_set_1), final_set_1)
-    print(len(final_set_2), final_set_2)
-    print(len(final_set_3), final_set_3)
+    # Get common subkeys among all
+    final_set_0 = list(set(keys_p0[0]) & set(keys_p0[1]))
+    final_set_1 = list(set(keys_p1[0]) & set(keys_p1[1]))
+    final_set_2 = list(set(keys_p2[0]) & set(keys_p2[1]))
+    final_set_3 = list(set(keys_p3[0]) & set(keys_p3[1]))
 
+    # Piece together 4 subkeys to get K10
     key10 = [0] * 16
-    indexGroups = [[0, 7, 10, 13], [1, 4, 11, 14], [2, 5, 8, 15], [3, 6, 9, 12]]
+    indexGroups = [[0, 13, 10, 7], [4, 1, 14, 11], [8, 5, 2, 15], [12, 9, 6, 3]]
     for i in range(0, 4):
         key10[indexGroups[0][i]] = final_set_0[0][i]
         key10[indexGroups[1][i]] = final_set_1[0][i]
         key10[indexGroups[2][i]] = final_set_2[0][i]
         key10[indexGroups[3][i]] = final_set_3[0][i]
 
-    np.save("key10", key10)
-    
-    key10 = np.load("key10.npy", "r").astype(np.uint8)
+    # Key reversal
+    np.save("../data/key10", key10)
     allKeys = reverseKey(key10)
-    vhex = np.vectorize(hex)
-    allKeysHex = vhex(allKeys)
+    allKeysHex = np.vectorize(hex)(allKeys)
+    allKey_dict = {}
     print("Secret Key: ", allKeysHex[0:16])
     for i in range(1, 11, 1):
         print("Round {}:".format(i), allKeysHex[16*i : 16*(i+1)])
-    np.save("allKeys", allKeysHex)
+    np.save("../data/allKeys", allKeys)
