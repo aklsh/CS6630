@@ -1,6 +1,4 @@
 import numpy as np
-from multiprocessing import Pool
-import pandas as pd
 
 ct = np.load("ciphertexts.npy")
 ct_ = np.load("faultytexts.npy")
