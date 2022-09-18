@@ -9,7 +9,7 @@ s = np.load("sbox.npy")
 s_ = np.load("sbox_inv.npy")
 
 mult = np.load("multiplies.npy")
-rcon = np.load("rcon.npy")
+rcon = [0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36]
 
 def sbox(byte):
     return s[byte]
@@ -18,7 +18,7 @@ def sbox_inv(byte):
     return s_[byte]
 
 def reverseKey(key10):
-    subKeys = np.zeros(176, dtype= np.uint8)
+    subKeys = [0] * 176
     for i in range(160, 176):
         subKeys[i] = key10[i - 160]
     for i in range(156, -1, -4):
@@ -28,12 +28,13 @@ def reverseKey(key10):
             subKeys[i+2] = subKeys[i+18] ^ sbox(subKeys[i+15])
             subKeys[i+3] = subKeys[i+19] ^ sbox(subKeys[i+12])
         else:
-            subKeys[i] = subKeys[i + 16] ^ sbox(subKeys[i+12])
-            subKeys[i+1] = subKeys[i+17] ^ sbox(subKeys[i+13])
-            subKeys[i+2] = subKeys[i+18] ^ sbox(subKeys[i+14])
-            subKeys[i+3] = subKeys[i+19] ^ sbox(subKeys[i+15])
+            subKeys[i] = subKeys[i + 16] ^ subKeys[i+12]
+            subKeys[i+1] = subKeys[i+17] ^ subKeys[i+13]
+            subKeys[i+2] = subKeys[i+18] ^ subKeys[i+14]
+            subKeys[i+3] = subKeys[i+19] ^ subKeys[i+15]
+            
     return subKeys
-    
+   
 def get_fault_column(position):
     if position == 0 or position == 5 or position == 10 or position == 15:
         return 0
@@ -138,10 +139,12 @@ if __name__ == '__main__':
         key10[indexGroups[3][i]] = final_set_3[0][i]
 
     np.save("key10", key10)
-    #key10 = np.load("key10.npy", "r").astype(np.uint8)
+    
+    key10 = np.load("key10.npy", "r").astype(np.uint8)
     allKeys = reverseKey(key10)
-    allKey_dict = {}
-    print("Secret Key: ", allKeys[0:16])
+    vhex = np.vectorize(hex)
+    allKeysHex = vhex(allKeys)
+    print("Secret Key: ", allKeysHex[0:16])
     for i in range(1, 11, 1):
-        print("Round {}:".format(i), allKeys[16*i : 16*(i+1)])
-    np.save("allKeys", allKeys)
+        print("Round {}:".format(i), allKeysHex[16*i : 16*(i+1)])
+    np.save("allKeys", allKeysHex)
