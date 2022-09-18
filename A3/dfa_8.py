@@ -1,6 +1,4 @@
 import numpy as np
-from multiprocessing import Pool
-import pandas as pd
 
 ct = np.load("ciphertexts.npy")
 ct_ = np.load("faultytexts.npy")
@@ -17,6 +15,7 @@ def sbox(byte):
 def sbox_inv(byte):
     return s_[byte]
 
+# Key reversal from round 10 key
 def reverseKey(key10):
     subKeys = np.zeros(176, dtype= np.uint8)
     for i in range(160, 176):
@@ -34,6 +33,7 @@ def reverseKey(key10):
             subKeys[i+3] = subKeys[i+19] ^ sbox(subKeys[i+15])
     return subKeys
 
+# Get the column affected after ShiftRows
 def get_fault_column(position):
     if position == 0 or position == 5 or position == 10 or position == 15:
         return 0
@@ -46,6 +46,7 @@ def get_fault_column(position):
     else:
         return None
 
+# Get the factors for delta in each of the 4 sets of 4 equations
 def get_factors(column):
     if column == 0:
         return [[2, 1, 1, 3],
@@ -97,15 +98,19 @@ def solve(correct, faulty, byte_positions, factors):
     return possibilities
 
 if __name__ == '__main__':
+    # 4 subparts of all inputs and fault positions
     keys_p0 = []
     keys_p1 = []
     keys_p2 = []
     keys_p3 = []
-    for pair_num in range(4):
+    # solve for 2 pairs of CT-CT'
+    for pair_num in range(2):
+        # different 4-byte subkeys of K10
         keys_0_7_10_13 = []
         keys_1_4_11_14 = []
         keys_2_5_8_15 = []
         keys_3_6_9_12 = []
+        # assume fault is at each position (since we don't know where)
         for position in range(16):
             col_num = get_fault_column(position)
             assert(col_num!=None)
@@ -119,15 +124,13 @@ if __name__ == '__main__':
         keys_p1.append(keys_1_4_11_14)
         keys_p2.append(keys_2_5_8_15)
         keys_p3.append(keys_3_6_9_12)
-    final_set_0 = list(set(keys_p0[0]) & set(keys_p0[1]) & set(keys_p0[2]) & set(keys_p0[3]))
-    final_set_1 = list(set(keys_p1[0]) & set(keys_p1[1]) & set(keys_p1[2]) & set(keys_p1[3]))
-    final_set_2 = list(set(keys_p2[0]) & set(keys_p2[1]) & set(keys_p2[2]) & set(keys_p2[3]))
-    final_set_3 = list(set(keys_p3[0]) & set(keys_p3[1]) & set(keys_p3[2]) & set(keys_p3[3]))
-    print(len(final_set_0), final_set_0)
-    print(len(final_set_1), final_set_1)
-    print(len(final_set_2), final_set_2)
-    print(len(final_set_3), final_set_3)
+    # Get common subkeys among all
+    final_set_0 = list(set(keys_p0[0]) & set(keys_p0[1]))
+    final_set_1 = list(set(keys_p1[0]) & set(keys_p1[1]))
+    final_set_2 = list(set(keys_p2[0]) & set(keys_p2[1]))
+    final_set_3 = list(set(keys_p3[0]) & set(keys_p3[1]))
 
+    # Piece together 4 subkeys to get K10
     key10 = [0] * 16
     indexGroups = [[0, 13, 10, 7], [4, 1, 14, 11], [8, 5, 2, 15], [12, 9, 6, 3]]
     for i in range(0, 4):
@@ -136,8 +139,8 @@ if __name__ == '__main__':
         key10[indexGroups[2][i]] = final_set_2[0][i]
         key10[indexGroups[3][i]] = final_set_3[0][i]
 
+    # Key reversal
     np.save("key10", key10)
-    #key10 = np.load("key10.npy", "r").astype(np.uint8)
     allKeys = reverseKey(key10)
     allKey_dict = {}
     print("Secret Key: ", allKeys[0:16])
