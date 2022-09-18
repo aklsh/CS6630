@@ -74,9 +74,11 @@ def get_factors(column):
 # Solve 1 set of equations (4 key bytes)
 def solve(correct, faulty, byte_positions, factors):
     possibilities = []
+    # Assume certain delta
     for delta in range(256):
         b_sols = []
 
+        # Solve for each of the 4 bytes
         for i in range(4):
             bi_sols = []
             lhs = mult[factors[i],delta]
@@ -86,8 +88,10 @@ def solve(correct, faulty, byte_positions, factors):
                     bi_sols.append(kb)
             b_sols.append(bi_sols)
 
+        # If at least one equation not satisfied for given delta, discard
         if (len(b_sols[0]) == 0) or (len(b_sols[1]) == 0) or (len(b_sols[2]) == 0) or (len(b_sols[3]) == 0):
             continue
+        # Else, add solutions to possibilities
         else:
             for b0 in b_sols[0]:
                 for b1 in b_sols[1]:
