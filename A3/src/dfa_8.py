@@ -7,7 +7,7 @@ s = np.load("../data/sbox.npy")
 s_ = np.load("../data/sbox_inv.npy")
 
 mult = np.load("../data/multiplies.npy")
-rcon = [0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36]
+rcon = np.load("../data/rcon.npy")
 
 def sbox(byte):
     return s[byte]
@@ -30,9 +30,8 @@ def reverseKey(key10):
             subKeys[i+1] = subKeys[i+17] ^ subKeys[i+13]
             subKeys[i+2] = subKeys[i+18] ^ subKeys[i+14]
             subKeys[i+3] = subKeys[i+19] ^ subKeys[i+15]
-            
     return subKeys
-   
+
 def get_fault_column(position):
     if position == 0 or position == 5 or position == 10 or position == 15:
         return 0
