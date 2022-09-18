@@ -1,13 +1,13 @@
 import numpy as np
 
-ct = np.load("ciphertexts.npy")
-ct_ = np.load("faultytexts.npy")
+ct = np.load("../data/ciphertexts.npy")
+ct_ = np.load("../data/faultytexts.npy")
 
-s = np.load("sbox.npy")
-s_ = np.load("sbox_inv.npy")
+s = np.load("../data/sbox.npy")
+s_ = np.load("../data/sbox_inv.npy")
 
-mult = np.load("multiplies.npy")
-rcon = np.load("rcon.npy")
+mult = np.load("../data/multiplies.npy")
+rcon = np.load("../data/rcon.npy")
 
 def sbox(byte):
     return s[byte]
@@ -144,10 +144,10 @@ if __name__ == '__main__':
         key10[indexGroups[3][i]] = final_set_3[0][i]
 
     # Key reversal
-    np.save("key10", key10)
+    np.save("../data/key10", key10)
     allKeys = reverseKey(key10)
     allKey_dict = {}
     print("Secret Key: ", allKeys[0:16])
     for i in range(1, 11, 1):
         print("Round {}:".format(i), allKeys[16*i : 16*(i+1)])
-    np.save("allKeys", allKeys)
+    np.save("../data/allKeys", allKeys)
